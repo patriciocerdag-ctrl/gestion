@@ -2,536 +2,336 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Gestión de Pacientes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GDT ENLACE | Registro de Disponibilidad</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* =========================================
-           1. VARIABLES CSS (Paleta y Espaciado)
-           ========================================= */
         :root {
-            --bg-body: #f8fafc;
-            --bg-surface: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --border: #e2e8f0;
-            --doc-color: #0284c7;
-            --doc-bg: #e0f2fe;
-            --folder-color: #d97706;
-            --folder-bg: #fef3c7;
-            --radius: 0.75rem;
-            --transition: all 0.2s ease-in-out;
+            --indigo: #4f46e5;
+            --indigo-dark: #4338ca;
+            --slate-50: #f8fafc;
+            --slate-200: #e2e8f0;
+            --slate-600: #475569;
+            --slate-900: #0f172a;
+            --emerald: #10b981;
+            --font-main: 'Inter', sans-serif;
         }
 
-        /* =========================================
-           2. RESET Y TIPOGRAFÍA
-           ========================================= */
+        /* RESET TOTAL PARA ELIMINAR EL SCROLL */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            line-height: 1.5;
-            padding: 1.5rem;
+        html, body {
+            height: 100dvh; 
+            width: 100vw;
+            overflow: hidden; 
+            font-family: var(--font-main);
+            background-color: var(--slate-50);
+            color: var(--slate-900);
         }
 
-        /* =========================================
-           3. ESTRUCTURA PRINCIPAL (Grid/Flexbox)
-           ========================================= */
-        .app-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: var(--bg-surface);
-            border-radius: var(--radius);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-            padding: 2rem;
+        /* CONTENEDOR DE VISTAS */
+        .view-step {
+            display: none;
+            flex-direction: column;
+            height: 100dvh;
+            width: 100%;
+            padding: 12px;
+            animation: fadeIn 0.3s ease forwards;
         }
 
-        header {
+        .view-step.active { display: flex; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- TARJETAS (PASO 1 Y ÉXITO) --- */
+        .card {
+            background: white;
+            padding: 2.5rem 1.5rem;
+            border-radius: 1.25rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        #step-1, #step-success { justify-content: center; align-items: center; }
+
+        h1 { font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--slate-900); }
+        .input-group { margin-bottom: 1.2rem; text-align: left; }
+        .input-group label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; }
+        
+        .input-group input, .input-group select { 
+            width: 100%; padding: 0.8rem; border: 1px solid var(--slate-200); 
+            border-radius: 0.6rem; font-size: 1rem; outline: none; transition: border 0.2s;
+            background-color: white;
+            font-family: inherit;
+        }
+        .input-group input:focus, .input-group select:focus { border-color: var(--indigo); }
+        .input-group input:invalid:not(:placeholder-shown) { border-color: #ef4444; }
+
+        /* --- PASO 2: CALENDARIO --- */
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 35px;
+            flex-shrink: 0;
+        }
+        .btn-text { background: none; border: none; color: var(--indigo); font-weight: 600; cursor: pointer; font-size: 0.9rem; }
+
+        .grid-wrapper {
+            flex: 1; 
             display: flex;
             flex-direction: column;
-            gap: 1rem;
-            margin-bottom: 2rem;
+            background: white;
+            border: 1px solid var(--slate-200);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 8px;
         }
 
-        .header-actions {
+        .calendar-grid {
+            display: grid;
+            height: 100%;
+            width: 100%;
+            grid-template-columns: 2.8rem repeat(7, 1fr);
+            grid-template-rows: 25px repeat(14, 1fr);
+        }
+
+        .cell {
+            border-right: 1px solid var(--slate-200);
+            border-bottom: 1px solid var(--slate-200);
             display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-        }
-
-        @media (min-width: 768px) {
-            header {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-            }
-        }
-
-        h1 { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
-
-        /* =========================================
-           4. BOTONES E INTERACCIONES
-           ========================================= */
-        .btn {
-            display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            border: none;
-            transition: var(--transition);
-        }
-
-        .btn-inicio { background-color: var(--text-main); color: white; }
-        .btn-inicio:hover { background-color: #0f172a; transform: translateY(-1px); }
-
-        /* Estilo para el nuevo botón de actualizar */
-        .btn-update { background-color: var(--bg-surface); color: var(--text-main); border: 1px solid var(--border); }
-        .btn-update:hover { background-color: var(--bg-body); transform: translateY(-1px); }
-
-        .btn-doc { background-color: var(--doc-bg); color: var(--doc-color); }
-        .btn-doc:hover { background-color: #bae6fd; }
-
-        .btn-folder { background-color: var(--folder-bg); color: var(--folder-color); }
-        .btn-folder:hover { background-color: #fde68a; }
-
-        /* =========================================
-           5. NAVEGACIÓN Y BÚSQUEDA
-           ========================================= */
-        .search-container { position: relative; width: 100%; max-width: 400px; }
-        
-        #searchInput {
-            width: 100%;
-            padding: 0.75rem 1rem 0.75rem 2.5rem;
-            border: 1px solid var(--border);
-            border-radius: 2rem;
-            font-size: 0.95rem;
-            outline: none;
-            transition: var(--transition);
-        }
-        
-        #searchInput:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        
-        .search-icon {
-            position: absolute;
-            left: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-        }
-
-        .tabs {
-            display: flex;
-            gap: 1rem;
-            border-bottom: 2px solid var(--border);
-            margin-bottom: 1.5rem;
-            overflow-x: auto; /* Scroll en móviles */
-        }
-
-        .tab-btn {
-            background: none;
-            border: none;
-            padding: 0.75rem 0.5rem;
-            font-size: 0.95rem;
-            font-weight: 500;
-            color: var(--text-muted);
-            cursor: pointer;
             position: relative;
-            transition: var(--transition);
-            white-space: nowrap;
         }
 
-        .tab-btn:hover { color: var(--text-main); }
-        
-        .tab-btn.active { color: var(--primary); font-weight: 600; }
-        
-        /* Animación del indicador del tab activo */
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background-color: var(--primary);
-            border-radius: 2px 2px 0 0;
+        .head { background: var(--slate-50); font-weight: 700; font-size: 0.6rem; text-transform: uppercase; }
+        .time { background: var(--slate-50); color: var(--slate-600); font-weight: 500; font-size: 0.6rem; }
+
+        .slot-checkbox { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 2; }
+        .slot-box {
+            width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+            transition: 0.1s; color: transparent; font-weight: bold;
         }
+        .slot-checkbox:checked + .slot-box { background-color: var(--indigo); color: white; }
 
-        /* =========================================
-           6. TABLAS RESPONSIVAS (Mobile-First)
-           ========================================= */
-        .seccion-tabla { display: none; animation: fadeIn 0.3s ease; }
-        .seccion-tabla.activa { display: block; }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        table { width: 100%; border-collapse: collapse; }
-        
-        /* Comportamiento Móvil: Tarjetas */
-        @media (max-width: 767px) {
-            thead { display: none; /* Ocultar encabezados en móvil */ }
-            tr {
-                display: flex;
-                flex-direction: column;
-                border: 1px solid var(--border);
-                border-radius: var(--radius);
-                margin-bottom: 1rem;
-                padding: 1rem;
-                background: var(--bg-surface);
-            }
-            td {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0.5rem 0;
-                border: none;
-            }
-            /* Insertar etiquetas de datos en móvil */
-            td::before {
-                content: attr(data-label);
-                font-weight: 600;
-                color: var(--text-muted);
-                font-size: 0.85rem;
-            }
+        /* --- BOTONES --- */
+        .btn-main {
+            width: 100%; height: 50px; background: var(--indigo); color: white;
+            border: none; border-radius: 0.75rem; font-weight: 700; font-size: 1rem;
+            cursor: pointer; margin-top: 12px; flex-shrink: 0; transition: background 0.2s;
         }
+        .btn-main:active { background: var(--indigo-dark); transform: scale(0.98); }
+        .btn-main:disabled { background: var(--slate-200); color: var(--slate-600); cursor: not-allowed; }
 
-        /* Comportamiento Escritorio: Tablas estándar */
+        /* --- VISTA DE ÉXITO --- */
+        .success-icon {
+            width: 64px; height: 64px; background: var(--emerald); color: white;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; margin: 0 auto 1.5rem;
+        }
+        .success-msg { color: var(--slate-600); line-height: 1.5; margin-bottom: 2rem; }
+
         @media (min-width: 768px) {
-            th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border); }
-            th { background-color: var(--bg-body); color: var(--text-muted); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
-            tr:hover { background-color: var(--bg-body); }
+            .calendar-grid { grid-template-columns: 4.5rem repeat(7, 1fr); }
+            .head, .cell { font-size: 0.8rem; }
+            .view-step { padding: 2rem; }
         }
-
-        /* Selectores de Estado */
-        select.estado-select {
-            padding: 0.4rem 0.5rem;
-            border: 1px solid var(--border);
-            border-radius: 0.4rem;
-            background-color: var(--bg-surface);
-            color: var(--text-main);
-            font-size: 0.875rem;
-            cursor: pointer;
-            outline: none;
-        }
-        select.estado-select:focus { border-color: var(--primary); }
-
-        .nombre-clickable { color: var(--primary); cursor: pointer; font-weight: 600; transition: var(--transition); }
-        .nombre-clickable:hover { color: var(--primary-hover); text-decoration: underline; }
-
-        .hidden-row { display: none !important; }
-
-        /* =========================================
-           7. SPINNER DE CARGA
-           ========================================= */
-        #loader {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 3rem;
-            color: var(--text-muted);
-            gap: 1rem;
-        }
-        
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--border);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* =========================================
-           8. MODAL ACCESIBLE (<dialog>)
-           ========================================= */
-        dialog {
-            margin: auto;
-            padding: 2rem;
-            border: none;
-            border-radius: var(--radius);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            max-width: 450px;
-            width: 90%;
-            background: var(--bg-surface);
-            color: var(--text-main);
-        }
-        dialog::backdrop { background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); }
-        
-        .modal-header { margin-bottom: 1.5rem; }
-        .modal-title { font-size: 1.25rem; font-weight: 700; }
-        
-        .form-group { margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.4rem; }
-        .form-group label { font-size: 0.875rem; font-weight: 600; color: var(--text-muted); }
-        .form-group input { padding: 0.75rem; border: 1px solid var(--border); border-radius: 0.5rem; outline: none; transition: var(--transition); }
-        .form-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
-        
-        .modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 2rem; }
-        .btn-cancel { background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border); }
-        .btn-save { background: var(--primary); color: white; }
-        .btn-save:hover { background: var(--primary-hover); }
-
     </style>
 </head>
 <body>
 
-<main class="app-container">
-    <header>
-        <h1>Gestión de Pacientes</h1>
-        <div class="header-actions">
-            <button onclick="recargarDatos()" class="btn btn-update" aria-label="Actualizar datos">
-                <span>🔄</span> Actualizar
-            </button>
-            <a href="https://drive.google.com/file/d/152qIc3AErVKAmK7P2XPGU8TwOp3o_SUd/view" target="_blank" class="btn btn-inicio">
-                <span>🏠</span> Ir a Inicio
-            </a>
-        </div>
-    </header>
-
-    <nav aria-label="Navegación principal">
-        <div class="search-container">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" oninput="filtrarPacientes()" placeholder="Buscar paciente por nombre..." aria-label="Buscar paciente">
-        </div>
-
-        <div class="tabs" role="tablist">
-            <button class="tab-btn active" role="tab" aria-selected="true" onclick="mostrarTab('control', event)">En control</button>
-            <button class="tab-btn" role="tab" aria-selected="false" onclick="mostrarTab('alta', event)">Alta COSAM</button>
-            <button class="tab-btn" role="tab" aria-selected="false" onclick="mostrarTab('traslado', event)">Traslado a otro tratante</button>
-            <button class="tab-btn" role="tab" aria-selected="false" onclick="mostrarTab('contingencia', event)">Vista por contingencia</button>
-        </div>
-    </nav>
-
-    <section id="loader" aria-live="polite">
-        <div class="spinner"></div>
-        <p>Cargando datos del panel...</p>
+    <section id="step-1" class="view-step active">
+        <form id="formDatos" class="card" onsubmit="event.preventDefault(); goToStep2();">
+            <h1>Registro de Datos</h1>
+                    <p class="subtitle">Ingresa tu información para comenzar.</p>
+<br>
+<br>
+            <div class="input-group">
+                <label>Nombre y apellido</label>
+                <input type="text" id="nombre" placeholder="Ej. Dr. Juan Soto" required>
+            </div>
+            <div class="input-group">
+                <label>Hospital o Clínica</label>
+                <select id="hospital" required>
+                    <option value="" disabled selected><span style="color: gray;">Selecciona una institución...</span></option>
+                    <option value="Clínica Alemana">Clínica Alemana</option>
+                    <option value="Clínica U. Andes">Clínica U. Andes</option>
+                    <option value="H. San José - IPS Horwitz">H. San José - IPS Horwitz</option>
+                    <option value="Hospital Barros Luco">Hospital Barros Luco</option>
+                    <option value="Hospital Biprovincial Quillota Petorca">Hospital Biprovincial Quillota Petorca</option>
+                    <option value="Hospital Clínico UC">Hospital Clínico UC</option>
+                    <option value="Hospital de Angol">Hospital de Angol</option>
+                    <option value="Hospital de Carabineros">Hospital de Carabineros</option>
+                    <option value="Hospital de Coquimbo">Hospital de Coquimbo</option>
+                    <option value="Hospital de Ovalle">Hospital de Ovalle</option>
+                    <option value="Hospital de Talca">Hospital de Talca</option>
+                    <option value="Hospital de Temuco">Hospital de Temuco</option>
+                    <option value="Hospital del Tórax">Hospital del Tórax</option>
+                    <option value="Hospital del Trabajador">Hospital del Trabajador</option>
+                    <option value="Hospital El Pino">Hospital El Pino</option>
+                    <option value="Hospital Félix Bulnes">Hospital Félix Bulnes</option>
+                    <option value="Hospital Gustavo Fricke">Hospital Gustavo Fricke</option>
+                    <option value="Hospital La Florida">Hospital La Florida</option>
+                    <option value="Hospital Las Higueras de Talcahuano">Hospital Las Higueras de Talcahuano</option>
+                    <option value="Hospital Padre Hurtado">Hospital Padre Hurtado</option>
+                    <option value="Hospital Puerto Montt">Hospital Puerto Montt</option>
+                    <option value="Hospital Regional Concepción">Hospital Regional Concepción</option>
+                    <option value="Hospital Regional de Coyhaique">Hospital Regional de Coyhaique</option>
+                    <option value="Hospital San Borja">Hospital San Borja</option>
+                    <option value="Hospital San Juan de Dios">Hospital San Juan de Dios</option>
+                    <option value="Hospital Sótero del Río">Hospital Sótero del Río</option>
+                    <option value="Hospital Van Buren Valparaíso">Hospital Van Buren Valparaíso</option>
+                    <option value="INCANCER">INCANCER</option>
+                    <option value="Posta Central">Posta Central</option>
+                    <option value="Otro Hospital/Clínica">Otro Hospital/Clínica</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Correo Electrónico</label>
+                <input 
+                    type="email" 
+                    id="correo" 
+                    placeholder="correo@ejemplo.com" 
+                    required 
+                    pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                    title="Ingresa un correo válido (ejemplo@dominio.com)"
+                >
+            </div>
+            <button type="submit" class="btn-main">Continuar a Disponibilidad →</button>
+        </form>
     </section>
 
-    <div id="tab-control" class="seccion-tabla activa" role="tabpanel">
-        <table><thead><tr><th>Nombre del Paciente</th><th>Ficha</th><th>Carpeta</th><th>Estado</th></tr></thead><tbody id="body-control"></tbody></table>
-    </div>
-    <div id="tab-alta" class="seccion-tabla" role="tabpanel">
-        <table><thead><tr><th>Nombre del Paciente</th><th>Ficha</th><th>Carpeta</th><th>Estado</th></tr></thead><tbody id="body-alta"></tbody></table>
-    </div>
-    <div id="tab-traslado" class="seccion-tabla" role="tabpanel">
-        <table><thead><tr><th>Nombre del Paciente</th><th>Ficha</th><th>Carpeta</th><th>Estado</th></tr></thead><tbody id="body-traslado"></tbody></table>
-    </div>
-    <div id="tab-contingencia" class="seccion-tabla" role="tabpanel">
-        <table><thead><tr><th>Nombre del Paciente</th><th>Ficha</th><th>Carpeta</th><th>Estado</th></tr></thead><tbody id="body-contingencia"></tbody></table>
-    </div>
-</main>
-
-<dialog id="editModal">
-    <div class="modal-header">
-        <h2 class="modal-title">Editar Información</h2>
-    </div>
-    <form id="editForm" method="dialog">
-        <input type="hidden" id="modalIndex">
-        <input type="hidden" id="modalOriginalName">
-        
-        <div class="form-group">
-            <label for="modalNombre">Nombre del paciente</label>
-            <input type="text" id="modalNombre" required>
+    <section id="step-2" class="view-step">
+        <div class="calendar-nav">
+            <button class="btn-text" onclick="goToStep1()">← Volver</button>
+                    <div style="text-align: right">
+                        <p style="font-weight: 700; font-size: 0.9rem;">Selecciona tus horarios</p>
+                        <p style="font-size: 0.75rem; color: var(--slate-600);">Lunes a Domingo, 08:00 - 21:00</p>
+                    </div>
         </div>
-        <div class="form-group">
-            <label for="modalDoc">Enlace de la Ficha</label>
-            <input type="url" id="modalDoc" required>
+
+        <div class="grid-wrapper">
+            <div class="calendar-grid" id="grid"></div>
         </div>
-        <div class="form-group">
-            <label for="modalCarpeta">Enlace de la Carpeta</label>
-            <input type="url" id="modalCarpeta" required>
+
+        <button id="btnFinalizar" class="btn-main" onclick="enviarTodo()">Finalizar y Enviar</button>
+    </section>
+
+    <section id="step-success" class="view-step">
+        <div class="card">
+            <div class="success-icon">✓</div>
+            <h1>¡Enviado con éxito!</h1>
+            <p class="success-msg">La información de tu disponibilidad ha sido recibida correctamente. Ya puedes cerrar esta ventana.</p>
+            <button class="btn-main" onclick="location.reload()">Enviar otra respuesta</button>
         </div>
-        
-        <div class="modal-actions">
-            <button type="button" class="btn btn-cancel" onclick="cerrarModal()">Cancelar</button>
-            <button type="submit" class="btn btn-save">Guardar Cambios</button>
-        </div>
-    </form>
-</dialog>
+    </section>
 
-<script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwhfqcYJSA2WE293mssqnlCwy-LuiJzLjkezImKot68Uh8SzBtxtlrDcyBVfa439Rk/exec";
-    let pacientesLocal = []; 
-
-    // Referencias al Modal
-    const modal = document.getElementById('editModal');
-    const formModal = document.getElementById('editForm');
-
-    // Navegación de Pestañas (Tabs)
-    function mostrarTab(categoria, evento) {
-        document.querySelectorAll('.seccion-tabla').forEach(s => s.classList.remove('activa'));
-        document.querySelectorAll('.tab-btn').forEach(b => {
-            b.classList.remove('active');
-            b.setAttribute('aria-selected', 'false');
-        });
-        
-        document.getElementById('tab-' + categoria).classList.add('activa');
-        if (evento) {
-            evento.currentTarget.classList.add('active');
-            evento.currentTarget.setAttribute('aria-selected', 'true');
-        }
-    }
-
-    // Buscador con eliminación de acentos (Tildes)
-    function removerAcentos(texto) {
-        // Normaliza el texto separando la letra del acento y luego elimina el acento
-        return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    }
-
-    function filtrarPacientes() {
-        // Obtenemos el texto del buscador, lo pasamos a minúsculas y le quitamos los acentos
-        const queryOriginal = document.getElementById('searchInput').value.toLowerCase();
-        const query = removerAcentos(queryOriginal);
-
-        document.querySelectorAll('tbody tr').forEach(fila => {
-            // Hacemos lo mismo con el nombre de cada celda en la tabla
-            const textoColumnaOriginal = fila.querySelector('td').innerText.toLowerCase();
-            const nombreColumna = removerAcentos(textoColumnaOriginal);
-            
-            fila.classList.toggle('hidden-row', !nombreColumna.includes(query));
-        });
-    }
-
-    // Renderizado limpio de las tablas
-    function renderizarTablas() {
-        const bodies = {
-            "En control": document.getElementById('body-control'),
-            "Alta COSAM": document.getElementById('body-alta'),
-            "Traslado a otro tratante": document.getElementById('body-traslado'),
-            "Vista por contingencia": document.getElementById('body-contingencia')
-        };
-        
-        const htmlAcumulado = {
-            "En control": "", "Alta COSAM": "", "Traslado a otro tratante": "", "Vista por contingencia": ""
+    <script>
+        const CONFIG = {
+            url: "https://script.google.com/macros/s/AKfycbz8Jwt2XMZP5qS73P9QEbtaUtkueBPMwdVfNca5Z2BIvTK0jky5cyE0Yg0FGmblwEdarw/exec",
+            dias: ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"],
+            horas: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"]
         };
 
-        pacientesLocal.forEach((p, index) => {
-            const filaHtml = `
-                <tr>
-                    <td data-label="Paciente">
-                        <span class="nombre-clickable" onclick="abrirModal(${index})">${p.Nombre}</span>
-                    </td>
-                    <td data-label="Ficha">
-                        <a href="${p.Link1}" target="_blank" class="btn btn-doc" aria-label="Ver ficha de ${p.Nombre}">
-                            📄 Ficha
-                        </a>
-                    </td>
-                    <td data-label="Carpeta">
-                        <a href="${p.Carpeta}" target="_blank" class="btn btn-folder" aria-label="Ver carpeta de ${p.Nombre}">
-                            📂 Carpeta
-                        </a>
-                    </td>
-                    <td data-label="Estado">
-                        <select class="estado-select" onchange="cambiarEstado(${index}, this.value)" aria-label="Cambiar estado de ${p.Nombre}">
-                            <option value="En control" ${p.Estado === "En control" ? "selected" : ""}>En control</option>
-                            <option value="Alta COSAM" ${p.Estado === "Alta COSAM" ? "selected" : ""}>Alta COSAM</option>
-                            <option value="Traslado a otro tratante" ${p.Estado === "Traslado a otro tratante" ? "selected" : ""}>Traslado</option>
-                            <option value="Vista por contingencia" ${p.Estado === "Vista por contingencia" ? "selected" : ""}>Contingencia</option>
-                        </select>
-                    </td>
-                </tr>`;
-            
-            if (htmlAcumulado[p.Estado] !== undefined) {
-                htmlAcumulado[p.Estado] += filaHtml;
+        function goToStep2() {
+            const form = document.getElementById('formDatos');
+            if(!form.checkValidity()) {
+                alert("Por favor, completa todos los campos correctamente."); 
+                return;
             }
-        });
-
-        Object.keys(bodies).forEach(estado => {
-            if (bodies[estado]) bodies[estado].innerHTML = htmlAcumulado[estado];
-        });
-    }
-
-    // =========================================
-    //  LÓGICA DEL MODAL (Reemplazo de prompt)
-    // =========================================
-    function abrirModal(idx) {
-        const p = pacientesLocal[idx];
-        
-        document.getElementById('modalIndex').value = idx;
-        document.getElementById('modalOriginalName').value = p.Nombre;
-        document.getElementById('modalNombre').value = p.Nombre;
-        document.getElementById('modalDoc').value = p.Link1; 
-        document.getElementById('modalCarpeta').value = p.Carpeta;
-        
-        modal.showModal(); 
-    }
-
-    function cerrarModal() {
-        modal.close();
-    }
-
-    formModal.addEventListener('submit', function(evento) {
-        const idx = document.getElementById('modalIndex').value;
-        const original = document.getElementById('modalOriginalName').value;
-        
-        const nNombre = document.getElementById('modalNombre').value;
-        const nDoc = document.getElementById('modalDoc').value;
-        const nCarp = document.getElementById('modalCarpeta').value;
-
-        const p = pacientesLocal[idx];
-        
-        p.Nombre = nNombre; 
-        p.Link1 = nDoc; 
-        p.Carpeta = nCarp;
-        renderizarTablas();
-        
-        fetch(`${API_URL}?action=editFull&original=${encodeURIComponent(original)}&nuevoNombre=${encodeURIComponent(nNombre)}&nuevoDoc=${encodeURIComponent(nDoc)}&nuevaCarpeta=${encodeURIComponent(nCarp)}`, {mode:'no-cors'});
-    });
-
-    // =========================================
-    //  ACTUALIZACIÓN DE DATOS
-    // =========================================
-    async function cambiarEstado(idx, nuevoEstado) {
-        const p = pacientesLocal[idx];
-        p.Estado = nuevoEstado;
-        renderizarTablas(); 
-        
-        fetch(`${API_URL}?action=update&nombre=${encodeURIComponent(p.Nombre)}&estado=${encodeURIComponent(nuevoEstado)}`, {mode:'no-cors'});
-    }
-
-    async function cargarDatos() {
-        try {
-            const res = await fetch(API_URL);
-            pacientesLocal = await res.json();
-            renderizarTablas();
-            document.getElementById('loader').style.display = 'none';
-        } catch (e) {
-            document.getElementById('loader').innerHTML = "<p>❌ Error al conectar con la base de datos. Por favor, recarga la página.</p>";
+            showStep(2);
         }
-    }
 
-    // Nueva función para recargar manualmente
-    async function recargarDatos() {
-        // Mostramos el loader de nuevo
-        document.getElementById('loader').style.display = 'flex';
-        
-        // Guardamos qué pestaña está activa actualmente para no perderla
-        const tabActiva = document.querySelector('.tab-btn.active');
-        
-        // Ocultamos las tablas mientras cargan
-        document.querySelectorAll('.seccion-tabla').forEach(s => s.classList.remove('activa'));
-        
-        // Volvemos a pedir los datos a la base de datos
-        await cargarDatos();
-        
-        // Volvemos a mostrar la pestaña en la que estábamos
-        if(tabActiva) {
-            tabActiva.click();
+        function goToStep1() { showStep(1); }
+
+        function showStep(stepNumber) {
+            document.querySelectorAll('.view-step').forEach(s => s.classList.remove('active'));
+            if(stepNumber === 1) document.getElementById('step-1').classList.add('active');
+            if(stepNumber === 2) document.getElementById('step-2').classList.add('active');
+            if(stepNumber === 3) document.getElementById('step-success').classList.add('active');
         }
-    }
 
-    // Iniciar
-    cargarDatos();
-</script>
+        function initGrid() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = "";
+            const corner = document.createElement('div');
+            corner.className = 'cell head';
+            grid.appendChild(corner);
 
+            CONFIG.dias.forEach(d => {
+                const div = document.createElement('div');
+                div.className = 'cell head';
+                div.innerText = d;
+                grid.appendChild(div);
+            });
+
+            CONFIG.horas.forEach((h, hIdx) => {
+                const labelH = document.createElement('div');
+                labelH.className = 'cell time';
+                labelH.innerText = h;
+                grid.appendChild(labelH);
+
+                CONFIG.dias.forEach((d, dIdx) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    const id = `cb-${dIdx}-${hIdx}`;
+                    // Aquí es donde hicimos el cambio para mostrar el Día y la Hora en vez del "✓"
+                    cell.innerHTML = `
+                        <input type="checkbox" class="slot-checkbox" id="${id}" value="${d} ${h}">
+                        <div class="slot-box" style="font-size: 0.55rem; flex-direction: column; line-height: 1.2;">
+                            <span>${d}</span>
+                            <span>${h}</span>
+                        </div>
+                    `;
+                    grid.appendChild(cell);
+                });
+            });
+        }
+
+        function enviarTodo() {
+            const seleccionados = Array.from(document.querySelectorAll('.slot-checkbox:checked')).map(cb => cb.value);
+            if(seleccionados.length === 0) return alert("Selecciona al menos un horario.");
+
+            const btn = document.getElementById('btnFinalizar');
+            btn.disabled = true;
+            btn.innerText = "Enviando...";
+
+            const payload = {
+                nombre: document.getElementById('nombre').value,
+                hospital: document.getElementById('hospital').value,
+                correo: document.getElementById('correo').value,
+                seleccionados: seleccionados
+            };
+
+            // Ajuste clave: Usamos text/plain en el Content-Type para evitar bloqueos en Google Apps Script
+            fetch(CONFIG.url, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            })
+            .then(() => {
+                // Al usar no-cors, la respuesta siempre será "opaca", así que asumimos éxito si no hay error de red
+                showStep(3);
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+                alert("Ocurrió un error al enviar los datos.");
+                btn.disabled = false;
+                btn.innerText = "Finalizar y Enviar";
+            });
+        }
+
+        initGrid();
+    </script>
 </body>
 </html>
