@@ -63,17 +63,7 @@
         #step-1, #step-success { justify-content: center; align-items: center; }
 
         h1 { font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--slate-900); }
-        .input-group { margin-bottom: 1.2rem; text-align: left; }
-        .input-group label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; }
-        
-        .input-group input, .input-group select { 
-            width: 100%; padding: 0.8rem; border: 1px solid var(--slate-200); 
-            border-radius: 0.6rem; font-size: 1rem; outline: none; transition: border 0.2s;
-            background-color: white;
-            font-family: inherit;
-        }
-        .input-group input:focus, .input-group select:focus { border-color: var(--indigo); }
-        .input-group input:invalid:not(:placeholder-shown) { border-color: #ef4444; }
+        .instructions-text { color: var(--slate-600); line-height: 1.6; margin-bottom: 2rem; font-size: 0.95rem; }
 
         /* --- PASO 2: CALENDARIO --- */
         .calendar-nav {
@@ -96,12 +86,13 @@
             margin-top: 8px;
         }
 
+        /* MODIFICADO: Se cambió el repeat de columnas a 4 y de filas a 7 para encajar con el nuevo horario */
         .calendar-grid {
             display: grid;
             height: 100%;
             width: 100%;
-            grid-template-columns: 2.8rem repeat(7, 1fr);
-            grid-template-rows: 25px repeat(14, 1fr);
+            grid-template-columns: 2.8rem repeat(4, 1fr);
+            grid-template-rows: 25px repeat(7, 1fr);
         }
 
         .cell {
@@ -141,7 +132,8 @@
         .success-msg { color: var(--slate-600); line-height: 1.5; margin-bottom: 2rem; }
 
         @media (min-width: 768px) {
-            .calendar-grid { grid-template-columns: 4.5rem repeat(7, 1fr); }
+            /* MODIFICADO: Ajuste de columnas responsivo para 4 días */
+            .calendar-grid { grid-template-columns: 4.5rem repeat(4, 1fr); }
             .head, .cell { font-size: 0.8rem; }
             .view-step { padding: 2rem; }
         }
@@ -150,73 +142,24 @@
 <body>
 
     <section id="step-1" class="view-step active">
-        <form id="formDatos" class="card" onsubmit="event.preventDefault(); goToStep2();">
-            <h1>Registro de Datos</h1>
-                    <p class="subtitle">Ingresa tu información para comenzar.</p>
-<br>
-<br>
-            <div class="input-group">
-                <label>Nombre y apellido</label>
-                <input type="text" id="nombre" placeholder="Ej. Dr. Juan Soto" required>
-            </div>
-            <div class="input-group">
-                <label>Hospital o Clínica</label>
-                <select id="hospital" required>
-                    <option value="" disabled selected><span style="color: gray;">Selecciona una institución...</span></option>
-                    <option value="Clínica Alemana">Clínica Alemana</option>
-                    <option value="Clínica U. Andes">Clínica U. Andes</option>
-                    <option value="H. San José - IPS Horwitz">H. San José - IPS Horwitz</option>
-                    <option value="Hospital Barros Luco">Hospital Barros Luco</option>
-                    <option value="Hospital Biprovincial Quillota Petorca">Hospital Biprovincial Quillota Petorca</option>
-                    <option value="Hospital Clínico UC">Hospital Clínico UC</option>
-                    <option value="Hospital de Angol">Hospital de Angol</option>
-                    <option value="Hospital de Carabineros">Hospital de Carabineros</option>
-                    <option value="Hospital de Coquimbo">Hospital de Coquimbo</option>
-                    <option value="Hospital de Ovalle">Hospital de Ovalle</option>
-                    <option value="Hospital de Talca">Hospital de Talca</option>
-                    <option value="Hospital de Temuco">Hospital de Temuco</option>
-                    <option value="Hospital del Tórax">Hospital del Tórax</option>
-                    <option value="Hospital del Trabajador">Hospital del Trabajador</option>
-                    <option value="Hospital El Pino">Hospital El Pino</option>
-                    <option value="Hospital Félix Bulnes">Hospital Félix Bulnes</option>
-                    <option value="Hospital Gustavo Fricke">Hospital Gustavo Fricke</option>
-                    <option value="Hospital La Florida">Hospital La Florida</option>
-                    <option value="Hospital Las Higueras de Talcahuano">Hospital Las Higueras de Talcahuano</option>
-                    <option value="Hospital Padre Hurtado">Hospital Padre Hurtado</option>
-                    <option value="Hospital Puerto Montt">Hospital Puerto Montt</option>
-                    <option value="Hospital Regional Concepción">Hospital Regional Concepción</option>
-                    <option value="Hospital Regional de Coyhaique">Hospital Regional de Coyhaique</option>
-                    <option value="Hospital San Borja">Hospital San Borja</option>
-                    <option value="Hospital San Juan de Dios">Hospital San Juan de Dios</option>
-                    <option value="Hospital Sótero del Río">Hospital Sótero del Río</option>
-                    <option value="Hospital Van Buren Valparaíso">Hospital Van Buren Valparaíso</option>
-                    <option value="INCANCER">INCANCER</option>
-                    <option value="Posta Central">Posta Central</option>
-                    <option value="Otro Hospital/Clínica">Otro Hospital/Clínica</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label>Correo Electrónico</label>
-                <input 
-                    type="email" 
-                    id="correo" 
-                    placeholder="correo@ejemplo.com" 
-                    required 
-                    pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-                    title="Ingresa un correo válido (ejemplo@dominio.com)"
-                >
-            </div>
-            <button type="submit" class="btn-main">Continuar a Disponibilidad →</button>
-        </form>
+        <div class="card">
+            <h1>Instrucciones</h1>
+            <p class="instructions-text">
+                Bienvenido.<br><br>
+                En la siguiente pantalla podrás indicar tu disponibilidad horaria.<br><br>
+                Haz clic en los bloques de la cuadrícula que correspondan a los días y horas en los que estás disponible. Puedes seleccionar todas las opciones que necesites.
+            </p>
+            <button class="btn-main" onclick="goToStep2()">Continuar a Disponibilidad →</button>
+        </div>
     </section>
 
     <section id="step-2" class="view-step">
         <div class="calendar-nav">
             <button class="btn-text" onclick="goToStep1()">← Volver</button>
-                    <div style="text-align: right">
-                        <p style="font-weight: 700; font-size: 0.9rem;">Selecciona tus horarios</p>
-                        <p style="font-size: 0.75rem; color: var(--slate-600);">Lunes a Domingo, 08:00 - 21:00</p>
-                    </div>
+            <div style="text-align: right">
+                <p style="font-weight: 700; font-size: 0.9rem;">Selecciona tus horarios</p>
+                <p style="font-size: 0.75rem; color: var(--slate-600);">Lunes a Jueves, 18:00 - 21:00</p>
+            </div>
         </div>
 
         <div class="grid-wrapper">
@@ -231,23 +174,19 @@
             <div class="success-icon">✓</div>
             <h1>¡Enviado con éxito!</h1>
             <p class="success-msg">La información de tu disponibilidad ha sido recibida correctamente. Ya puedes cerrar esta ventana.</p>
-            <button class="btn-main" onclick="location.reload()">Enviar otra respuesta</button>
+            <button class="btn-main" onclick="location.reload()">Volver al inicio</button>
         </div>
     </section>
 
     <script>
+        // MODIFICADO: Días de Lunes a Jueves y bloques de 30 minutos
         const CONFIG = {
             url: "https://script.google.com/macros/s/AKfycbz8Jwt2XMZP5qS73P9QEbtaUtkueBPMwdVfNca5Z2BIvTK0jky5cyE0Yg0FGmblwEdarw/exec",
-            dias: ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"],
-            horas: ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"]
+            dias: ["Lun", "Mar", "Mié", "Jue"],
+            horas: ["18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00"]
         };
 
         function goToStep2() {
-            const form = document.getElementById('formDatos');
-            if(!form.checkValidity()) {
-                alert("Por favor, completa todos los campos correctamente."); 
-                return;
-            }
             showStep(2);
         }
 
@@ -284,7 +223,6 @@
                     const cell = document.createElement('div');
                     cell.className = 'cell';
                     const id = `cb-${dIdx}-${hIdx}`;
-                    // Aquí es donde hicimos el cambio para mostrar el Día y la Hora en vez del "✓"
                     cell.innerHTML = `
                         <input type="checkbox" class="slot-checkbox" id="${id}" value="${d} ${h}">
                         <div class="slot-box" style="font-size: 0.55rem; flex-direction: column; line-height: 1.2;">
@@ -306,13 +244,12 @@
             btn.innerText = "Enviando...";
 
             const payload = {
-                nombre: document.getElementById('nombre').value,
-                hospital: document.getElementById('hospital').value,
-                correo: document.getElementById('correo').value,
+                nombre: "Anónimo", 
+                hospital: "No requerido",
+                correo: "No requerido",
                 seleccionados: seleccionados
             };
 
-            // Ajuste clave: Usamos text/plain en el Content-Type para evitar bloqueos en Google Apps Script
             fetch(CONFIG.url, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -320,7 +257,6 @@
                 body: JSON.stringify(payload)
             })
             .then(() => {
-                // Al usar no-cors, la respuesta siempre será "opaca", así que asumimos éxito si no hay error de red
                 showStep(3);
             })
             .catch((error) => {
